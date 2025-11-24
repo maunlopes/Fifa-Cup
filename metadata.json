@@ -1,0 +1,5 @@
+{
+  "name": "FIFA World Cup 2026 Simulator",
+  "description": "A high-fidelity simulator for the 48-team World Cup 2026. Predict scores, view live standings, and generate the knockout bracket automatically.",
+  "requestFramePermissions": []
+}
