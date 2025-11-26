@@ -5,138 +5,134 @@ import { MapPin, Info } from 'lucide-react';
 import { useLanguage } from '../contexts';
 
 interface MatchCardProps {
-  match: Match;
-  homeTeam?: Team;
-  awayTeam?: Team;
-  stadium?: Stadium;
-  onUpdateScore: (h: number, a: number) => void;
-  onOpenDetails: () => void;
+    match: Match;
+    homeTeam?: Team;
+    awayTeam?: Team;
+    stadium?: Stadium;
+    onUpdateScore: (h: number, a: number) => void;
+    onOpenDetails: () => void;
+    variant?: 'default' | 'compact';
+    className?: string;
 }
 
-export const MatchCard: React.FC<MatchCardProps> = ({ match, homeTeam, awayTeam, stadium, onUpdateScore, onOpenDetails }) => {
-  const { t } = useLanguage();
-  const isPlayed = match.homeScore !== null && match.awayScore !== null;
-  const isTBD = !homeTeam || !awayTeam;
+export const MatchCard: React.FC<MatchCardProps> = ({ match, homeTeam, awayTeam, stadium, onUpdateScore, onOpenDetails, variant = 'default', className = '' }) => {
+    const { t } = useLanguage();
+    const isPlayed = match.homeScore !== null && match.awayScore !== null;
+    const isTBD = !homeTeam || !awayTeam;
 
-  const handleScoreChange = (type: 'home' | 'away', val: string) => {
-    const num = parseInt(val);
-    if (isNaN(num)) return;
-    
-    if (type === 'home') onUpdateScore(num, match.awayScore ?? 0);
-    else onUpdateScore(match.homeScore ?? 0, num);
-  };
+    const handleScoreChange = (type: 'home' | 'away', val: string) => {
+        if (val === '') {
+            if (type === 'home') onUpdateScore(null as any, match.awayScore);
+            else onUpdateScore(match.homeScore, null as any);
+            return;
+        }
 
-  return (
-    <div className="relative group bg-white dark:bg-brand-surface/60 border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden hover:border-brand-primary/30 transition-all duration-300 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/20">
-      
-      {/* Background Gradient Accent */}
-      <div className={`absolute top-0 left-0 w-1 h-full transition-colors duration-300 ${isPlayed ? 'bg-brand-success' : 'bg-slate-300 dark:bg-slate-700 group-hover:bg-brand-primary'}`}></div>
+        const num = parseInt(val);
+        if (isNaN(num)) return;
 
-      <div className="p-5 pl-7">
-        {/* Header Info */}
-        <div className="flex justify-between items-start mb-4">
-            <div className="flex flex-col">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  {t(match.stage as any) || match.stage}
-                </span>
-                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    <MapPin size={10} />
-                    <span className="truncate max-w-[150px]">{stadium?.city}</span>
+        if (type === 'home') onUpdateScore(num, match.awayScore);
+        else onUpdateScore(match.homeScore, num);
+    };
+
+    if (variant === 'compact') {
+        return (
+            <div className="relative group bg-white dark:bg-brand-surface/80 border border-gray-200 dark:border-white/5 rounded-lg overflow-hidden hover:border-brand-primary/50 transition-all shadow-sm w-48">
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${isPlayed ? 'bg-brand-success' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+                <div className="p-1.5 pl-3 flex flex-col gap-0.5">
+                    {/* Home */}
+                    <div className="flex items-center justify-between h-6">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="w-4 h-4 shrink-0">
+                                {homeTeam ? (
+                                    <img src={`https://flagcdn.com/h40/${homeTeam.isoCode}.png`} className="w-full h-full object-cover rounded-full" alt={homeTeam.name} />
+                                ) : <div className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded-full" />}
+                            </div>
+                            <span className="text-xs font-semibold truncate text-slate-700 dark:text-slate-200 max-w-[80px]">{homeTeam?.name || 'TBD'}</span>
+                        </div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{match.homeScore ?? '-'}</span>
+                    </div>
+                    {/* Away */}
+                    <div className="flex items-center justify-between h-6">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="w-4 h-4 shrink-0">
+                                {awayTeam ? (
+                                    <img src={`https://flagcdn.com/h40/${awayTeam.isoCode}.png`} className="w-full h-full object-cover rounded-full" alt={awayTeam.name} />
+                                ) : <div className="w-4 h-4 bg-slate-200 dark:bg-slate-700 rounded-full" />}
+                            </div>
+                            <span className="text-xs font-semibold truncate text-slate-700 dark:text-slate-200 max-w-[80px]">{awayTeam?.name || 'TBD'}</span>
+                        </div>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">{match.awayScore ?? '-'}</span>
+                    </div>
                 </div>
             </div>
-            <div className="text-right">
-                <div className="font-mono text-xs text-brand-accent bg-brand-accent/10 px-2 py-1 rounded">{match.time}</div>
-                <div className="text-[10px] text-slate-400 mt-1">{match.date}</div>
+        );
+    }
+
+    return (
+        <div
+            onClick={onOpenDetails}
+            className={`relative group bg-white dark:bg-brand-surface border border-gray-200 dark:border-white/5 rounded-xl overflow-hidden hover:border-brand-primary/50 transition-all cursor-pointer shadow-sm hover:shadow-md ${className}`}
+        >
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${isPlayed ? 'bg-brand-success' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+
+            <div className="p-3 pl-4">
+                {/* Header Info */}
+                <div className="flex justify-between items-start mb-2">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                {t(match.stage as any) || match.stage}
+                            </span>
+                            {match.matchNumber && (
+                                <span className="text-[9px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                    #{match.matchNumber}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                            <MapPin size={8} />
+                            <span className="truncate max-w-[120px]">{stadium?.city}</span>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="font-mono text-[10px] text-brand-accent bg-brand-accent/10 px-1.5 py-0.5 rounded">{match.time}</div>
+                        <div className="text-[9px] text-slate-400 mt-0.5">{match.date}</div>
+                    </div>
+                </div>
+
+                {/* Teams */}
+                <div className="flex flex-col gap-2">
+                    {/* Home */}
+                    <div className="flex items-center justify-between h-8">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 shrink-0 shadow-sm rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                {homeTeam ? (
+                                    <img src={`https://flagcdn.com/h40/${homeTeam.isoCode}.png`} className="w-full h-full object-cover" alt={homeTeam.name} />
+                                ) : <div className="w-full h-full bg-slate-200 dark:bg-slate-700" />}
+                            </div>
+                            <span className="text-sm font-bold truncate text-slate-800 dark:text-slate-100">{homeTeam?.name || 'TBD'}</span>
+                        </div>
+                        <span className={`text-lg font-display font-bold ${match.homeScore !== null ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-700'}`}>
+                            {match.homeScore ?? '-'}
+                        </span>
+                    </div>
+
+                    {/* Away */}
+                    <div className="flex items-center justify-between h-8">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 shrink-0 shadow-sm rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                {awayTeam ? (
+                                    <img src={`https://flagcdn.com/h40/${awayTeam.isoCode}.png`} className="w-full h-full object-cover" alt={awayTeam.name} />
+                                ) : <div className="w-full h-full bg-slate-200 dark:bg-slate-700" />}
+                            </div>
+                            <span className="text-sm font-bold truncate text-slate-800 dark:text-slate-100">{awayTeam?.name || 'TBD'}</span>
+                        </div>
+                        <span className={`text-lg font-display font-bold ${match.awayScore !== null ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-700'}`}>
+                            {match.awayScore ?? '-'}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
-
-        {/* Teams & Scores Layout */}
-        <div className="flex items-center justify-between gap-2">
-            
-            {/* Home Team */}
-            <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={onOpenDetails}>
-                <div className="relative w-10 h-10 flex-shrink-0">
-                    {homeTeam ? (
-                        <img 
-                            src={`https://flagcdn.com/h80/${homeTeam.isoCode}.png`} 
-                            alt={homeTeam.name} 
-                            className="w-full h-full object-cover rounded-full border-2 border-slate-200 dark:border-slate-700 shadow-md"
-                        />
-                    ) : (
-                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
-                    )}
-                </div>
-                <span className={`font-display font-semibold text-lg truncate ${homeTeam ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-600'}`}>
-                    {homeTeam?.name || t('tbd')}
-                </span>
-            </div>
-
-            {/* Scoreboard */}
-            <div className="flex items-center gap-2 px-3">
-                {isTBD ? (
-                     <div className="w-20 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 rounded text-slate-400 dark:text-slate-600 text-xs font-bold">
-                        {t('vs')}
-                     </div>
-                ) : (
-                    <>
-                        <input 
-                            type="text" 
-                            inputMode="numeric"
-                            value={match.homeScore ?? ''}
-                            placeholder="-"
-                            onChange={(e) => handleScoreChange('home', e.target.value)}
-                            className={`w-10 h-10 text-center text-xl font-display font-bold rounded-lg border focus:ring-2 focus:ring-brand-primary outline-none transition-all ${
-                                match.homeScore !== null 
-                                ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white' 
-                                : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 focus:bg-white dark:focus:bg-slate-800'
-                            }`}
-                        />
-                        <span className="text-slate-400 font-bold">:</span>
-                        <input 
-                            type="text" 
-                            inputMode="numeric"
-                            value={match.awayScore ?? ''}
-                            placeholder="-"
-                            onChange={(e) => handleScoreChange('away', e.target.value)}
-                            className={`w-10 h-10 text-center text-xl font-display font-bold rounded-lg border focus:ring-2 focus:ring-brand-primary outline-none transition-all ${
-                                match.awayScore !== null 
-                                ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white' 
-                                : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 focus:bg-white dark:focus:bg-slate-800'
-                            }`}
-                        />
-                    </>
-                )}
-            </div>
-
-            {/* Away Team */}
-            <div className="flex items-center justify-end gap-3 flex-1 min-w-0 cursor-pointer" onClick={onOpenDetails}>
-                <span className={`font-display font-semibold text-lg truncate text-right ${awayTeam ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-600'}`}>
-                    {awayTeam?.name || t('tbd')}
-                </span>
-                <div className="relative w-10 h-10 flex-shrink-0">
-                    {awayTeam ? (
-                        <img 
-                            src={`https://flagcdn.com/h80/${awayTeam.isoCode}.png`} 
-                            alt={awayTeam.name} 
-                            className="w-full h-full object-cover rounded-full border-2 border-slate-200 dark:border-slate-700 shadow-md"
-                        />
-                    ) : (
-                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
-                    )}
-                </div>
-            </div>
-
-        </div>
-      </div>
-      
-      {/* Details Trigger Area */}
-      <button 
-        onClick={onOpenDetails}
-        className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-brand-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-      />
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-          <Info size={16} className="text-slate-400 hover:text-brand-primary cursor-pointer" onClick={onOpenDetails}/>
-      </div>
-    </div>
-  );
+    );
 };

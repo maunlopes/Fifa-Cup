@@ -35,6 +35,8 @@ export interface Player {
 
 export interface Match {
   id: string;
+  stage: Stage;
+  matchNumber?: number;
   homeTeamId: string | null; // Null if TBD (knockouts)
   awayTeamId: string | null;
   homeScore: number | null;
@@ -42,7 +44,7 @@ export interface Match {
   date: string;
   time: string;
   stadiumId: string;
-  stage: Stage;
+
   group?: string; // Only for group stage
   bracketId?: string; // To track knockout path (e.g., W49 vs W50)
   isSimulated?: boolean;
